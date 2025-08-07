@@ -1,5 +1,6 @@
 from collections.abc import Iterable
 from pipette import where, into, select, distinct, sort_by, take, pipette, traverse
+from pipette.curry import curry
 from dataclasses import dataclass
 
 
@@ -49,6 +50,15 @@ def main():
 
     abc = [1, [2, 3], 4, [5, [6, 7]], 8]
     print(abc | traverse | into(list[int]))
+
+    @curry
+    def add(a: int, b: int) -> int:
+        return a + b
+
+    print(add(2, 3))  # 5
+    a = add(2)
+    print(a(3))  # 5
+    print(add(2)(3))
 
 
 if __name__ == "__main__":
