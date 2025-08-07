@@ -1,4 +1,3 @@
-# from functools import wraps
 from typing import Callable, TypeVar, final, Generic
 from typing_extensions import override
 
@@ -16,7 +15,7 @@ class Curry(Generic[_R]):
         self.args: tuple[object, ...] = args
         self.kwargs: dict[str, object] = kwargs
 
-    def __call__(self, *args: object, **kwargs: object) -> object:
+    def __call__(self, *args: object, **kwargs: object) -> _R | "Curry[_R]":
         new_args = self.args + args
         new_kwargs = {**self.kwargs, **kwargs}
         total_args = self._count_non_self_args()
