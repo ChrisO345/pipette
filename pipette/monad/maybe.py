@@ -1,31 +1,17 @@
 from abc import ABC, abstractmethod
-from typing import Generic, TypeVar, Callable, cast, final
+from typing import Callable, TypeVar, cast, final
+
 from typing_extensions import override
+
+from .monad import Monad
 
 T = TypeVar("T")
 U = TypeVar("U")
 
 
-class Maybe(Generic[T], ABC):
+class Maybe(Monad[T], ABC):
     @abstractmethod
-    def map(self, func: Callable[[T], U]) -> "Maybe[U]":
-        raise NotImplementedError
-
-    @abstractmethod
-    def bind(self, func: Callable[[T], "Maybe[U]"]) -> "Maybe[U]":
-        raise NotImplementedError
-
-    def __rshift__(self, fn: Callable[[T], "Maybe[U]"]) -> "Maybe[U]":
-        """Alias for bind: monadic chaining with >>."""
-        return self.bind(fn)
-
-    def __or__(self, func: Callable[[T], U]) -> "Maybe[U]":
-        """Alias for map, allowing transformation of the value."""
-        return self.map(func)
-
-    @abstractmethod
-    def get_or_else(self, default: U) -> T | U:
-        raise NotImplementedError
+    def get_or_else(self, default: U) -> T | U: ...
 
 
 @final
@@ -34,11 +20,11 @@ class Some(Maybe[T]):
         self.value = value
 
     @override
-    def map(self, func: Callable[[T], U]) -> "Maybe[U]":
+    def map(self, func: Callable[[T], U]) -> Maybe[U]:
         return Some(func(self.value))
 
     @override
-    def bind(self, func: Callable[[T], Maybe[U]]) -> Maybe[U]:
+    def bind(self, func: Callable[[T], Maybe[U]]) -> Maybe[U]:  # pyright: ignore[reportIncompatibleMethodOverride]
         return func(self.value)
 
     @override
@@ -50,13 +36,14 @@ class Some(Maybe[T]):
         return f"Some({self.value})"
 
 
+@final
 class Nothing(Maybe[T]):
     @override
-    def map(self, func: Callable[[T], U]) -> "Maybe[U]":
+    def map(self, func: Callable[[T], U]) -> Maybe[U]:
         return cast(Maybe[U], self)
 
     @override
-    def bind(self, func: Callable[[T], Maybe[U]]) -> "Maybe[U]":
+    def bind(self, func: Callable[[T], Maybe[U]]) -> Maybe[U]:  # pyright: ignore[reportIncompatibleMethodOverride]
         return cast(Maybe[U], self)
 
     @override

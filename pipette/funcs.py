@@ -19,27 +19,27 @@ class SupportsLessThan(Protocol):
     def __lt__(self, other: object) -> bool: ...
 
 
-_T = TypeVar("_T")
-_U = TypeVar("_U")
+T = TypeVar("T")
+U = TypeVar("U")
 _COMPARABLE = TypeVar("_COMPARABLE", bound=SupportsLessThan)
 
 ## Core Functional Operations
 
 
 @pipette
-def select(iterable: Iterable[_T], selector: Callable[[_T], _U]) -> Iterable[_U]:
+def select(iterable: Iterable[T], selector: Callable[[T], U]) -> Iterable[U]:
     """Applies the selector function to each element in the iterable."""
     return builtins.map(selector, iterable)
 
 
 @pipette
-def where(iterable: Iterable[_T], predicate: Callable[[_T], bool]) -> Iterable[_T]:
+def where(iterable: Iterable[T], predicate: Callable[[T], bool]) -> Iterable[T]:
     """Filters the iterable based on the predicate function."""
     return builtins.filter(predicate, iterable)
 
 
 @pipette
-def into(iterable: Iterable[_T], typ: Callable[[Iterable[_T]], _U]) -> _U:
+def into(iterable: Iterable[T], typ: Callable[[Iterable[T]], U]) -> U:
     """Converts the iterable into a specific type, such as list, set, or dict."""
     return typ(iterable)
 
@@ -48,30 +48,28 @@ def into(iterable: Iterable[_T], typ: Callable[[Iterable[_T]], _U]) -> _U:
 
 
 @pipette
-def take(iterable: Iterable[_T], n: int) -> Iterable[_T]:
+def take(iterable: Iterable[T], n: int) -> Iterable[T]:
     """Takes the first n elements from the iterable."""
     return itertools.islice(iterable, n)
 
 
 @pipette
-def skip(iterable: Iterable[_T], n: int) -> Iterable[_T]:
+def skip(iterable: Iterable[T], n: int) -> Iterable[T]:
     """Skips the first n elements of the iterable."""
     return itertools.islice(iterable, n, None)
 
 
 @pipette
-def fork(
-    iterable: Iterable[_T], funcs: Iterable[Callable[[Iterable[_T]], _U]]
-) -> list[_U]:
+def fork(iterable: Iterable[T], funcs: Iterable[Callable[[Iterable[T]], U]]) -> list[U]:
     """Forks the iterable into multiple outputs based on the provided functions."""
     return [func(iterable) for func in funcs]
 
 
 @pipette
 def zip_with(
-    *iterables: Iterable[_T],
-) -> Iterable[tuple[_T | None, ...]]:
-    """Zips multiple iterables together into tuples."""
+    *iterables: Iterable[T],
+) -> Iterable[tuple[T | None, ...]]:
+    """Zips multiple iterables together, filling shorter ones with None."""
     return itertools.zip_longest(*iterables, fillvalue=None)
 
 
@@ -80,8 +78,8 @@ def zip_with(
 
 @pipette
 def reduce(
-    iterable: Iterable[_T], func: Callable[[_T, _T], _T], initial: _T | None = None
-) -> _T:
+    iterable: Iterable[T], func: Callable[[T, T], T], initial: T | None = None
+) -> T:
     """Reduces the iterable to a single value using the provided function."""
     if initial is not None:
         return functools.reduce(func, iterable, initial)
@@ -89,9 +87,9 @@ def reduce(
 
 
 @pipette
-def distinct(iterable: Iterable[_T]) -> Iterable[_T]:
+def distinct(iterable: Iterable[T]) -> Iterable[T]:
     """Returns an iterable with unique elements, preserving the order."""
-    seen: set[_T] = set()
+    seen: set[T] = set()
     return (x for x in iterable if x not in seen and not seen.add(x))
 
 
@@ -99,9 +97,9 @@ unique = distinct  # Alias for distinct
 
 
 @pipette
-def unique_by(iterable: Iterable[_T], key_fn: Callable[[_T], _U]) -> Iterable[_T]:
+def unique_by(iterable: Iterable[T], key_fn: Callable[[T], U]) -> Iterable[T]:
     """Returns an iterable with unique elements based on the key function."""
-    seen: set[_U] = set()
+    seen: set[U] = set()
     for item in iterable:
         key = key_fn(item)
         if key not in seen:
@@ -113,15 +111,13 @@ def unique_by(iterable: Iterable[_T], key_fn: Callable[[_T], _U]) -> Iterable[_T
 
 
 @pipette
-def sort_by(
-    iterable: Iterable[_T], key_fn: Callable[[_T], _COMPARABLE]
-) -> Iterable[_T]:
+def sort_by(iterable: Iterable[T], key_fn: Callable[[T], _COMPARABLE]) -> Iterable[T]:
     """Sorts the iterable based on the key function."""
     return sorted(iterable, key=key_fn)
 
 
 @pipette
-def chunk(iterable: Iterable[_T], size: int) -> Iterable[list[_T]]:
+def chunk(iterable: Iterable[T], size: int) -> Iterable[list[T]]:
     """Splits the iterable into chunks of a specified size."""
     it = iter(iterable)
     while chunk := list(itertools.islice(it, size)):
@@ -130,20 +126,20 @@ def chunk(iterable: Iterable[_T], size: int) -> Iterable[list[_T]]:
 
 @pipette
 def partition(
-    iterable: Iterable[_T], predicate: Callable[[_T], bool]
-) -> tuple[list[_T], list[_T]]:
+    iterable: Iterable[T], predicate: Callable[[T], bool]
+) -> tuple[list[T], list[T]]:
     """Partitions the iterable into two lists based on the predicate."""
-    true_list: list[_T] = []
-    false_list: list[_T] = []
+    true_list: list[T] = []
+    false_list: list[T] = []
     for item in iterable:
         (true_list if predicate(item) else false_list).append(item)
     return true_list, false_list
 
 
 @pipette
-def group_by(iterable: Iterable[_T], key_fn: Callable[[_T], _U]) -> dict[_U, list[_T]]:
+def group_by(iterable: Iterable[T], key_fn: Callable[[T], U]) -> dict[U, list[T]]:
     """Groups the iterable by the key function."""
-    grouped: dict[_U, list[_T]] = {}
+    grouped: dict[U, list[T]] = {}
     for item in iterable:
         key = key_fn(item)
         if key not in grouped:
@@ -153,17 +149,17 @@ def group_by(iterable: Iterable[_T], key_fn: Callable[[_T], _U]) -> dict[_U, lis
 
 
 @pipette
-def flatten(iterable: Iterable[_T | Iterable[_T]]) -> Iterable[_T]:
+def flatten(iterable: Iterable[T | Iterable[T]]) -> Iterable[T]:
     """Flattens a nested iterable into a single iterable."""
     for item in iterable:
         if isinstance(item, Iterable) and not isinstance(item, (str, bytes)):
             yield from item
         else:
-            yield cast(_T, item)
+            yield cast(T, item)
 
 
 @pipette
-def interleave(*iterables: Iterable[_T]) -> Iterable[_T]:
+def interleave(*iterables: Iterable[T]) -> Iterable[T]:
     """Interleaves elements from multiple iterables."""
     iterators = [iter(it) for it in iterables]
     while iterators:
@@ -175,7 +171,7 @@ def interleave(*iterables: Iterable[_T]) -> Iterable[_T]:
 
 
 @pipette
-def intersperse(iterable: Iterable[_T], separator: _T) -> Iterable[_T]:
+def intersperse(iterable: Iterable[T], separator: T) -> Iterable[T]:
     """Inserts a separator between each element of the iterable."""
     it = iter(iterable)
     try:
@@ -188,7 +184,7 @@ def intersperse(iterable: Iterable[_T], separator: _T) -> Iterable[_T]:
 
 
 @pipette
-def repeat(iterable: Iterable[_T], times: int) -> Iterable[_T]:
+def repeat(iterable: Iterable[T], times: int) -> Iterable[T]:
     """Repeats each element of the iterable a specified number of times."""
     for item in iterable:
         for _ in range(times):
@@ -199,13 +195,13 @@ def repeat(iterable: Iterable[_T], times: int) -> Iterable[_T]:
 
 
 @pipette
-def first(iterable: Iterable[_T]) -> _T | None:
+def first(iterable: Iterable[T]) -> T | None:
     """Returns the first element of the iterable, or None if empty."""
     return next(iter(iterable), None)
 
 
 @pipette
-def last(iterable: Iterable[_T]) -> _T | None:
+def last(iterable: Iterable[T]) -> T | None:
     """Returns the last element of the iterable, or None if empty."""
     result = None
     for result in iterable:
@@ -214,13 +210,13 @@ def last(iterable: Iterable[_T]) -> _T | None:
 
 
 @pipette
-def count(iterable: Iterable[_T]) -> int:
+def count(iterable: Iterable[T]) -> int:
     """Counts the number of elements in the iterable."""
     return sum(1 for _ in iterable)
 
 
 @pipette
-def length(iterable: Iterable[_T]) -> int:
+def length(iterable: Iterable[T]) -> int:
     """Returns the length of the iterable."""
     return len(tuple(iterable))
 
@@ -230,8 +226,8 @@ def length(iterable: Iterable[_T]) -> int:
 
 @pipette
 def traverse(
-    iterable: Iterable[_T | Iterable[_T]],
-) -> Generator[_T, None, None | int]:
+    iterable: Iterable[T | Iterable[T]],
+) -> Generator[T, None, None | int]:
     """Recursively traverses nested iterables and yields all elements."""
     for arg in iterable:
         if isinstance(arg, Iterable) and not isinstance(arg, (str, bytes)):
@@ -241,7 +237,7 @@ def traverse(
 
 
 @pipette
-def repeat_forever(iterable: Iterable[_T]) -> Generator[_T, None, None]:
+def repeat_forever(iterable: Iterable[T]) -> Generator[T, None, None]:
     """Repeats the iterable indefinitely."""
     continue_iter = itertools.cycle(iterable)
     while True:
@@ -249,7 +245,7 @@ def repeat_forever(iterable: Iterable[_T]) -> Generator[_T, None, None]:
 
 
 @pipette
-def rep(iterable: Iterable[_T], times: int) -> Generator[_T, None, None]:
+def rep(iterable: Iterable[T], times: int) -> Generator[T, None, None]:
     """Repeats the iterable a specified number of times."""
     for _ in range(times):
         yield from iterable

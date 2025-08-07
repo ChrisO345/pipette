@@ -1,3 +1,4 @@
+from functools import update_wrapper
 from typing import Callable, TypeVar, final, Generic
 from typing_extensions import override
 
@@ -14,6 +15,7 @@ class Curry(Generic[_R]):
         self.func: Callable[..., _R] = func
         self.args: tuple[object, ...] = args
         self.kwargs: dict[str, object] = kwargs
+        _ = update_wrapper(self, func)
 
     def __call__(self, *args: object, **kwargs: object) -> _R | "Curry[_R]":
         new_args = self.args + args
