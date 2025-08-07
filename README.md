@@ -2,14 +2,18 @@
 
 `pipette` is a lightweight, expressive Python library designed to enable clean, functional-style data processing pipelines with intuitive syntax and powerful composition.
 
+Note that due to the limitations of Python's static typing, some features may not provide type hints as expected. However, the library is designed to be flexible and easy to use, even without strict type enforcement.
+
 ---
 
 ## Features
 
 `pipette` is currently in early development, but it already includes:
-- Elegant chaining of iterable transformations using pipe-style syntax.
+- Lazy evaluation for efficient data processing.
+- Support for custom transformations using the `@pipette` decorator.
 - Core functional utilities like `select`, `where`, `reduce`, `sort_by`, and more.
-- Simple and extensible design to grow with your needs.
+- Currying support for partial function application.
+- Basic monad implementation for chaining operations with error handling.
 
 ---
 
@@ -60,7 +64,46 @@ result = (
 print(result)  # Output: [2, 4, 6, 8]
 ```
 
-More detailed usage examples and API docs will be added as development progresses.
+### Curry
+
+`pipette` provides a submodule for easy currying of functions:
+```python
+from pipette.curry import curry
+
+@curry
+def add(x: int, y: int) -> int:
+    return x + y
+
+result = add(2)(3)
+print(result) # Output: 5
+
+result = add(2)
+print(result(3)) # Output: 5
+```
+
+Note, however, that python's static typing does not support currying and the type hints will error.
+
+### Monads
+
+`pipette` also includes a simple monad implementation for chaining operations:
+```python
+from pipette.monad import Maybe, Some, Nothing
+
+def safe_divide(x, y) -> Maybe[float]:
+    if y == 0:
+        return Nothing()
+    else:
+        return Some(x / y)
+
+s = Some(10) >> (lambda x: safe_divide(x, 2)) | (lambda x: x + 1)
+print(s) # Output: Some(6.0)
+
+n = Some(10) >> (lambda x: safe_divide(x, 0)) | (lambda x: x + 1)
+print(n) # Output: Nothing
+```
+
+Here `>>` binds the monad value to the function, and `|` provides a simple way to map the result to another function.
+
 
 ---
 
