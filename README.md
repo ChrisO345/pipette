@@ -19,7 +19,13 @@ Note that due to the limitations of Python's static typing, some features may no
 
 ## Installation
 
-You can install the latest development version of `pipette` directly from GitHub using pip (or other Python package managers):
+`pipette` can be installed via pip from the Python Package Index (PyPI):
+
+```bash
+pip install pipette-fp
+```
+
+Alternatively, you can install the latest development version of `pipette` directly from GitHub:
 
 ```bash
 pip install git+https://github.com/chriso345/pipette
